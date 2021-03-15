@@ -157,10 +157,8 @@ def run(language = 'Chinese'):
             # train for one fold
             print('############# fold {} begin ###############'.format(fold))
             # Data Code Block
-            train_file_name = None
-            test_file_name = None
-            train_file_name = '{}/fold{}_test.txt'.format(language, fold)
-            test_file_name = '{}/fold{}_train.txt'.format(language,fold)
+            train_file_name = '{}/fold{}_train.txt'.format(language, fold)
+            test_file_name = '{}/fold{}_test.txt'.format(language,fold)
             print('Train file name is {}'.format(train_file_name))
             print('Test file name is {}'.format(test_file_name))
             tr_doc_id, tr_y_position, tr_y_cause, tr_y_pairs, tr_x, tr_sen_len, tr_doc_len = load_data('data_combine/'+train_file_name, word_id_mapping, FLAGS.max_doc_len, FLAGS.max_sen_len)
@@ -254,10 +252,10 @@ def main(_):
     # FLAGS.log_file_name = 'step1.log'
 
     FLAGS.scope='P_cause_1'
-    run('Chinese')
+    run('Spanish')
 
     FLAGS.scope='P_cause_2'
-    run('Chinese')
+    run('Spanish')
 
 
 if __name__ == '__main__':

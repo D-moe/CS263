@@ -6,24 +6,32 @@ import numpy as np
 import pickle as pk
 from sklearn.metrics import precision_score, recall_score, f1_score
 import pdb, time
+import os
 
 def print_time():
     print '\n----------{}----------'.format(time.strftime("%Y-%m-%d %X", time.localtime()))
 
 def load_w2v(embedding_dim, embedding_dim_pos, train_file_path, embedding_path):
+    # Looks like English GloVe embedding are in the same format as the other, that was lucky!
     print('\nload embedding...')
-
     words = []
     inputFile1 = open(train_file_path, 'r')
     for line in inputFile1.readlines():
         line = line.strip().split(',')
+        #print(line)
         emotion, clause = line[2], line[-1]
+        # Resolve problem with quoted sentences.
+        clause = clause.replace('\"','')
+        check = False
         words.extend( [emotion] + clause.split())
     words = set(words)  # 所有不重复词的集合
     word_idx = dict((c, k + 1) for k, c in enumerate(words)) # 每个词及词的位置
     word_idx_rev = dict((k + 1, c) for k, c in enumerate(words)) # 每个词及词的位置
-    
+
     w2v = {}
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    print(dir_path)
+    print(embedding_path)
     inputFile2 = open(embedding_path, 'r')
     inputFile2.readline()
     for line in inputFile2.readlines():
@@ -33,15 +41,19 @@ def load_w2v(embedding_dim, embedding_dim_pos, train_file_path, embedding_path):
 
     embedding = [list(np.zeros(embedding_dim))]
     hit = 0
+    miss_count = 0
     for item in words:
         if item in w2v:
             vec = list(map(float, w2v[item]))
             hit += 1
         else:
+            miss_count +=1
+            # Should also keep a count to see how many of these words were missed; more relevant 
+            # when we are using the English embeddings
             vec = list(np.random.rand(embedding_dim) / 5. - 0.1) # 从均匀分布[-0.1,0.1]中随机取
         embedding.append(vec)
     print('w2v_file: {}\nall_words: {} hit_words: {}'.format(embedding_path, len(words), hit))
-
+    print('Miss count: {}'.format(miss_count))
     embedding_pos = [list(np.zeros(embedding_dim_pos))]
     embedding_pos.extend( [list(np.random.normal(loc=0.0, scale=0.1, size=embedding_dim_pos)) for i in range(200)] )
 
@@ -62,10 +74,16 @@ def load_data(input_file, word_idx, max_doc_len = 75, max_sen_len = 45):
     while True:
         line = inputFile.readline()
         if line == '': break
-        line = line.strip().split()
+        line = line.strip()
+        # Resolve problem with quoted sentences.
+        line = line.replace('"', '')
+        line = line.split()
         doc_id.append(line[0])
         d_len = int(line[1])
         pairs = eval('[' + inputFile.readline().strip() + ']')
+        # Resolve last line empty set issue.
+        if not pairs:
+            break
         doc_len.append(d_len)
         y_pairs.append(pairs)
         pos, cause = zip(*pairs)
@@ -74,11 +92,13 @@ def load_data(input_file, word_idx, max_doc_len = 75, max_sen_len = 45):
             y_po[i][int(i+1 in pos)]=1
             y_ca[i][int(i+1 in cause)]=1
             words = inputFile.readline().strip().split(',')[-1]
+            words = words.replace('"','')
             sen_len_tmp[i] = min(len(words.split()), max_sen_len)
             for j, word in enumerate(words.split()):
                 if j >= max_sen_len:
                     n_cut += 1
                     break
+                #print(word)
                 x_tmp[i][j] = int(word_idx[word])
         
         y_position.append(y_po)
