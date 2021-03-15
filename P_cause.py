@@ -14,7 +14,10 @@ from utils.prepare_data import *
 FLAGS = tf.app.flags.FLAGS
 # >>>>>>>>>>>>>>>>>>>> For Model <<<<<<<<<<<<<<<<<<<< #
 ## embedding parameters ##
-tf.app.flags.DEFINE_string('w2v_file', '../data/w2v_200.txt', 'embedding file')
+tf.app.flags.DEFINE_string('path', '/home/dmoe/Documents/CS263/FinalProject/GitHub/ECPE/data_combine', 'file path')
+tf.app.flags.DEFINE_string('w2v_file_Chinese', '/home/dmoe/Documents/CS263/FinalProject/GitHub/ECPE/data_combine/Chinese/w2v_200.txt', 'embedding file')
+tf.app.flags.DEFINE_string('w2v_file_English', '/home/dmoe/Documents/CS263/FinalProject/GitHub/ECPE/data_combine/English/w2v_200.txt', 'embedding file')
+tf.app.flags.DEFINE_string('w2v_file_Spanish', '/home/dmoe/Documents/CS263/FinalProject/GitHub/ECPE/data_combine/Spanish/w2v_200.txt', 'embedding file')
 tf.app.flags.DEFINE_integer('embedding_dim', 200, 'dimension of word embedding')
 tf.app.flags.DEFINE_integer('embedding_dim_pos', 50, 'dimension of position embedding')
 ## input struct ##
@@ -54,7 +57,10 @@ def build_model(word_embedding, x, sen_len, doc_len, keep_prob1, keep_prob2, y_p
             s = att_var(inputs,sen_len,w1,b1,w2)
         s = tf.reshape(s, [-1, FLAGS.max_doc_len, 2 * FLAGS.n_hidden])
         return s
+
+    print("The value of s is ")
     s = get_s(inputs, name='cause_word_encode')
+    print(s)
     s = RNN(s, doc_len, n_hidden=FLAGS.n_hidden, scope=FLAGS.scope + 'cause_sentence_layer')
     with tf.name_scope('sequence_prediction'):
         s1 = tf.reshape(s, [-1, 2 * FLAGS.n_hidden])
@@ -93,8 +99,8 @@ def get_batch_data(x, sen_len, doc_len, keep_prob1, keep_prob2, y_position, y_ca
         feed_list = [x[index], sen_len[index], doc_len[index], keep_prob1, keep_prob2, y_position[index], y_cause[index]]
         yield feed_list, len(index)
 
-def run():
-    save_dir = 'pair_data/{}/'.format(FLAGS.scope)
+def run(language = 'Chinese'):
+    save_dir = 'pair_data/{}/{}/'.format(language,FLAGS.scope)
     if not os.path.exists(save_dir):
             os.makedirs(save_dir)
     if FLAGS.log_file_name:
@@ -102,7 +108,13 @@ def run():
     print_time()
     tf.reset_default_graph()
     # Model Code Block
-    word_idx_rev, word_id_mapping, word_embedding, pos_embedding = load_w2v(FLAGS.embedding_dim, FLAGS.embedding_dim_pos, 'data_combine/clause_keywords.csv', FLAGS.w2v_file)
+    word_vectors = '{}/{}/w2v_200.txt'.format(FLAGS.path,language)
+    print('The word_vector path is {}').format(word_vectors)
+    clauses = 'data_combine/{}/clause_keywords.csv'.format(language)
+    print('The clauses are {}'.format(clauses))
+        
+
+    word_idx_rev, word_id_mapping, word_embedding, pos_embedding = load_w2v(FLAGS.embedding_dim, FLAGS.embedding_dim_pos, clauses, word_vectors)
     word_embedding = tf.constant(word_embedding, dtype=tf.float32, name='word_embedding')
     pos_embedding = tf.constant(pos_embedding, dtype=tf.float32, name='pos_embedding')
 
@@ -140,13 +152,17 @@ def run():
         acc_pos_list, p_pos_list, r_pos_list, f1_pos_list = [], [], [], []
         p_pair_list, r_pair_list, f1_pair_list = [], [], []
         
-        for fold in range(1,11):
+        for fold in range(4,5):
             sess.run(tf.global_variables_initializer())
             # train for one fold
             print('############# fold {} begin ###############'.format(fold))
             # Data Code Block
-            train_file_name = 'fold{}_train.txt'.format(fold)
-            test_file_name = 'fold{}_test.txt'.format(fold)
+            train_file_name = None
+            test_file_name = None
+            train_file_name = '{}/fold{}_test.txt'.format(language, fold)
+            test_file_name = '{}/fold{}_train.txt'.format(language,fold)
+            print('Train file name is {}'.format(train_file_name))
+            print('Test file name is {}'.format(test_file_name))
             tr_doc_id, tr_y_position, tr_y_cause, tr_y_pairs, tr_x, tr_sen_len, tr_doc_len = load_data('data_combine/'+train_file_name, word_id_mapping, FLAGS.max_doc_len, FLAGS.max_sen_len)
             te_doc_id, te_y_position, te_y_cause, te_y_pairs, te_x, te_sen_len, te_doc_len = load_data('data_combine/'+test_file_name, word_id_mapping, FLAGS.max_doc_len, FLAGS.max_sen_len)
             max_f1_cause, max_f1_pos, max_f1_avg = [-1.] * 3
@@ -238,10 +254,10 @@ def main(_):
     # FLAGS.log_file_name = 'step1.log'
 
     FLAGS.scope='P_cause_1'
-    run()
+    run('Chinese')
 
     FLAGS.scope='P_cause_2'
-    run()
+    run('Chinese')
 
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ from utils.prepare_data import *
 FLAGS = tf.app.flags.FLAGS
 # >>>>>>>>>>>>>>>>>>>> For Model <<<<<<<<<<<<<<<<<<<< #
 ## embedding parameters ##
-tf.app.flags.DEFINE_string('w2v_file', '../data/w2v_200.txt', 'embedding file')
+tf.app.flags.DEFINE_string('w2v_file', '/home/dmoe/Documents/CS263/FinalProject/GitHub/ECPE/data_combine/w2v_200.txt', 'embedding file')
 tf.app.flags.DEFINE_integer('embedding_dim', 200, 'dimension of word embedding')
 tf.app.flags.DEFINE_integer('embedding_dim_pos', 50, 'dimension of position embedding')
 ## input struct ##
@@ -54,7 +54,11 @@ def build_model(word_embedding, pos_embedding, x, sen_len, keep_prob1, keep_prob
         return s
     s = get_s(inputs, name='cause_word_encode')
     dis = tf.nn.embedding_lookup(pos_embedding, distance)
+    print('The value of dis is :')
+    print(dis)
     s = tf.concat([s, dis], 1)
+    print('The value of s is :')
+    print(s)
 
     s1 = tf.nn.dropout(s, keep_prob=keep_prob2)
     w_pair = get_weight_varible('softmax_w_pair', [4 * FLAGS.n_hidden + FLAGS.embedding_dim_pos, FLAGS.n_class])
@@ -184,7 +188,7 @@ def main(_):
     # FLAGS.log_file_name = 'step2.log'
     FLAGS.training_iter=20
 
-    for scope_name in ['Ind_BiLSTM', 'P_emotion', 'P_cause']:
+    for scope_name in ['P_cause']:
         FLAGS.scope= scope_name + '_1'
         run()
         FLAGS.scope= scope_name + '_2'
