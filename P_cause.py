@@ -29,7 +29,7 @@ tf.app.flags.DEFINE_integer('n_class', 2, 'number of distinct class')
 # >>>>>>>>>>>>>>>>>>>> For Data <<<<<<<<<<<<<<<<<<<< #
 tf.app.flags.DEFINE_string('log_file_name', '', 'name of log file')
 # >>>>>>>>>>>>>>>>>>>> For Training <<<<<<<<<<<<<<<<<<<< #
-tf.app.flags.DEFINE_integer('training_iter', 15, 'number of train iter')
+tf.app.flags.DEFINE_integer('training_iter', 1, 'number of train iter')
 tf.app.flags.DEFINE_string('scope', 'RNN', 'RNN scope')
 # not easy to tune , a good posture of using data to train model is very important
 tf.app.flags.DEFINE_integer('batch_size', 32, 'number of example per batch')
@@ -223,8 +223,8 @@ def run(language = 'Chinese'):
                             clause = clause + word_idx_rev[x[i][j][k]] + ' '
                         g.write(str(j+1)+', '+str(pred_y_pos[i][j])+', '+str(pred_y_cause[i][j])+', '+clause+'\n')
                 print 'write {} done'.format(file_name)
-            get_pair_data(save_dir + test_file_name, te_doc_id, te_doc_len, te_y_pairs, te_pred_y_cause, te_pred_y_pos, te_x, te_sen_len, word_idx_rev)
-            get_pair_data(save_dir + train_file_name, tr_doc_id, tr_doc_len, tr_y_pairs, tr_pred_y_cause, tr_pred_y_pos, tr_x, tr_sen_len, word_idx_rev)
+            get_pair_data(save_dir + 'fold{}_test.txt'.format(fold), te_doc_id, te_doc_len, te_y_pairs, te_pred_y_cause, te_pred_y_pos, te_x, te_sen_len, word_idx_rev)
+            get_pair_data(save_dir + 'fold{}_train.txt'.format(fold), tr_doc_id, tr_doc_len, tr_y_pairs, tr_pred_y_cause, tr_pred_y_pos, tr_x, tr_sen_len, word_idx_rev)
             
             print 'Optimization Finished!\n'
             print('############# fold {} end ###############'.format(fold))
