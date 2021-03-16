@@ -222,8 +222,8 @@ def run(language = 'Chinese'):
                             clause = clause + word_idx_rev[x[i][j][k]] + ' '
                         g.write(str(j+1)+', '+str(pred_y_pos[i][j])+', '+str(pred_y_cause[i][j])+', '+clause+'\n')
                 print 'write {} done'.format(file_name)
-            get_pair_data(save_dir + test_file_name, te_doc_id, te_doc_len, te_y_pairs, te_pred_y_cause, te_pred_y_pos, te_x, te_sen_len, word_idx_rev)
-            get_pair_data(save_dir + train_file_name, tr_doc_id, tr_doc_len, tr_y_pairs, tr_pred_y_cause, tr_pred_y_pos, tr_x, tr_sen_len, word_idx_rev)
+            get_pair_data(save_dir + 'fold{}_test.txt'.format(fold), te_doc_id, te_doc_len, te_y_pairs, te_pred_y_cause, te_pred_y_pos, te_x, te_sen_len, word_idx_rev)
+            get_pair_data(save_dir + 'fold{}_train.txt'.format(fold), tr_doc_id, tr_doc_len, tr_y_pairs, tr_pred_y_cause, tr_pred_y_pos, tr_x, tr_sen_len, word_idx_rev)
             
             print 'Optimization Finished!\n'
             print('############# fold {} end ###############'.format(fold))
